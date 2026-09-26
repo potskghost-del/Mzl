@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MF AI Assistant - Mingfruit</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            // Theme colors defined for dynamic feel
+            brand: {
+              blue: '#0284c7',
+              cyan: '#06b6d4',
+              orange: '#f97316',
+              amber: '#f59e0b',
+            }
+          },
+          animation: {
+            'pulse-glow': 'pulseGlow 2s infinite',
+            'bounce-slow': 'bounce 1.5s infinite',
+          },
+          keyframes: {
+            pulseGlow: {
+              '0%, 100%': { opacity: 1, filter: 'drop-shadow(0 0 8px currentColor)' },
+              '50%': { opacity: 0.5, filter: 'drop-shadow(0 0 2px currentColor)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar Styles */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(156, 163, 175, 0.3);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(156, 163, 175, 0.5);
+    }
+    
+    /* Code block background custom overrides */
+    pre code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.875rem;
+    }
+
+    /* Light Theme Palette Rules */
+    html:not(.dark) {
+      --bg-main: #f8fafc;
+      --bg-panel: #ffffff;
+      --bg-bubble-ai: #f1f5f9;
+      --text-main: #0f172a;
+      --accent-color: #0284c7;
+      --accent-hover: #0369a1;
+      --accent-light: #e0f2fe;
+      --border-color: #e2e8f0;
+      --user-bubble-bg: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
+    }
+
+    /* Dark Theme Palette Rules (Black - Orange) */
+    html.dark {
+      --bg-main: #09090b;
+      --bg-panel: #121215;
+      --bg-bubble-ai: #1c1c21;
+      --text-main: #f4f4f5;
+      --accent-color: #f97316;
+      --accent-hover: #ea580c;
+      --accent-light: #2c1a0e;
+      --border-color: #27272a;
+      --user-bubble-bg: linear-gradient(135deg, #ea580c 0%, #d97706 100%);
+    }
+
+    .accent-bg { background-color: var(--accent-color); }
+    .accent-text { color: var(--accent-color); }
+    .accent-border { border-color: var(--accent-color); }
+    .user-bubble { background: var(--user-bubble-bg); }
+  </style>
+</head>
+
+<body class="bg-[var(--bg-main)] text-[var(--text-main)] font-sans h-screen flex flex-col overflow-hidden transition-colors duration-300">
+
+  <!-- Top Navigation Header -->
+  <header class="h-16 border-b border-[var(--border-color)] bg-[var(--bg-panel)] px-4 flex items-center justify-between z-20 shrink-0 shadow-sm">
+    <div class="flex items-center gap-3">
+      <!-- Sidebar Toggle Button (3-lines menu) -->
+      <button id="toggle-sidebar-btn" class="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-slate-600 dark:text-zinc-300 transition-colors" title="Mở lịch sử chat">
+        <i class="fa-solid fa-bars text-xl"></i>
+      </button>
+
+      <!-- App Logo & Branding -->
+      <div class="flex items-center gap-2.5 select-none">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-tr from-blue-600 to-cyan-400 dark:from-orange-500 dark:to-amber-400 text-white shadow-lg shadow-blue-500/20 dark:shadow-orange-500/20 transition-all duration-300">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 21 17.52 21 12C21 10.5 20.6 9.1 19.9 7.8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="18" cy="5" r="3" fill="currentColor"/>
+          </svg>
+        </div>
+        <div>
+          <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-orange-400 dark:to-amber-400 bg-clip-text text-transparent">MF AI</span>
+          <span class="text-xs font-semibold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-orange-950/60 text-blue-700 dark:text-orange-400 border border-blue-200 dark:border-orange-800/50 ml-1">Mingfruit</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Control: AI Reasoning Mode Selector -->
+    <div class="hidden md:flex items-center bg-[var(--bg-main)] p-1 rounded-xl border border-[var(--border-color)]">
+      <button data-mode="fast" class="mode-btn px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 accent-bg text-white shadow">
+        <i class="fa-solid fa-bolt text-amber-300"></i> Nhanh
+      </button>
+      <button data-mode="normal" class="mode-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 transition-all duration-200 flex items-center gap-1.5">
+        <i class="fa-solid fa-brain"></i> Thường
+      </button>
+      <button data-mode="pro" class="mode-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 transition-all duration-200 flex items-center gap-1.5">
+        <i class="fa-solid fa-microchip text-purple-400"></i> Pro (Toán & Code)
+      </button>
+    </div>
+
+    <!-- Right Utility Buttons -->
+    <div class="flex items-center gap-2">
+      <!-- Grounding Web Search Toggle Button -->
+      <button id="web-search-toggle" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--border-color)] bg-slate-100 dark:bg-zinc-800 text-xs font-medium text-slate-600 dark:text-zinc-300 hover:border-blue-500 dark:hover:border-orange-500 transition-all" title="Bật/Tắt tìm kiếm dữ liệu thực tế trên Web">
+        <i class="fa-solid fa-globe text-blue-500 dark:text-orange-400"></i>
+        <span class="hidden sm:inline">Web Search</span>
+        <span id="search-status-dot" class="w-2 h-2 rounded-full bg-emerald-500 ml-0.5"></span>
+      </button>
+
+      <!-- Theme Switch Button (Light/Dark) -->
+      <button id="theme-toggle-btn" class="p-2 rounded-xl border border-[var(--border-color)] hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-amber-400 transition-all" title="Chuyển chế độ sáng/tối">
+        <i class="fa-solid fa-sun dark:hidden text-lg text-amber-500"></i>
+        <i class="fa-solid fa-moon hidden dark:block text-lg text-orange-400"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Outer Layout (Sidebar + Chat Area) -->
+  <div class="flex-1 flex overflow-hidden relative">
+
+    <!-- Sidebar Backdrop Overlay for Mobile -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/50 z-30 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"></div>
+
+    <!-- Sidebar Drawer -->
+    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 w-72 bg-[var(--bg-panel)] border-r border-[var(--border-color)] z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 flex flex-col shadow-xl md:shadow-none">
+      
+      <!-- Sidebar Top Actions -->
+      <div class="p-3 border-b border-[var(--border-color)] flex items-center gap-2">
+        <button id="new-chat-btn" class="flex-1 py-2.5 px-3 rounded-xl accent-bg text-white font-medium text-sm flex items-center justify-center gap-2 shadow-md hover:opacity-90 transition-opacity">
+          <i class="fa-solid fa-plus"></i> Cuộc trò chuyện mới
+        </button>
+        <button id="close-sidebar-mobile" class="md:hidden p-2 text-slate-400 hover:text-slate-200">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Mobile Mode Switcher (Visible in drawer for small screens) -->
+      <div class="p-3 border-b border-[var(--border-color)] md:hidden">
+        <div class="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">Chế độ AI</div>
+        <div class="grid grid-cols-3 gap-1 bg-[var(--bg-main)] p-1 rounded-lg border border-[var(--border-color)]">
+          <button data-mode="fast" class="mode-btn-mobile text-xs py-1.5 rounded font-medium text-center accent-bg text-white">Nhanh</button>
+          <button data-mode="normal" class="mode-btn-mobile text-xs py-1.5 rounded font-medium text-center text-slate-400">Thường</button>
+          <button data-mode="pro" class="mode-btn-mobile text-xs py-1.5 rounded font-medium text-center text-slate-400">Pro</button>
+        </div>
+      </div>
+
+      <!-- History Chat List -->
+      <div class="flex-1 overflow-y-auto p-2 space-y-1" id="chat-history-list">
+        <div class="text-xs font-semibold text-slate-400 dark:text-zinc-500 px-3 py-2 uppercase tracking-wider">Lịch sử trò chuyện</div>
+        <div id="history-loading" class="px-3 py-2 text-xs text-slate-400 italic flex items-center gap-2">
+          <i class="fa-solid fa-spinner fa-spin"></i> Đang tải lịch sử...
+        </div>
+        <!-- History items dynamically inserted here -->
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="p-3 border-t border-[var(--border-color)] bg-[var(--bg-main)]/50 flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
+        <button id="clear-history-btn" class="flex items-center gap-1.5 text-rose-500 hover:text-rose-600 transition-colors p-1.5 rounded hover:bg-rose-50 dark:hover:bg-rose-950/30">
+          <i class="fa-solid fa-trash-can"></i> Xóa tất cả lịch sử
+        </button>
+        <span id="user-status-badge" class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 font-mono text-[10px]">Cloud Active</span>
+      </div>
+    </aside>
+
+    <!-- Main Chat Workspace -->
+    <main class="flex-1 flex flex-col h-full bg-[var(--bg-main)] relative">
+
+      <!-- Messages Container -->
+      <div id="messages-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 max-w-4xl w-full mx-auto">
+        
+        <!-- Welcome Screen (shown when chat is empty) -->
+        <div id="welcome-screen" class="my-auto py-12 flex flex-col items-center justify-center text-center space-y-6">
+          <div class="w-20 h-20 rounded-2xl flex items-center justify-center bg-gradient-to-tr from-blue-600 to-cyan-400 dark:from-orange-500 dark:to-amber-400 text-white shadow-2xl shadow-blue-500/30 dark:shadow-orange-500/30 animate-pulse-glow">
+            <i class="fa-solid fa-sparkles text-3xl"></i>
+          </div>
+          <div class="max-w-md space-y-2">
+            <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Xin chào, tôi là <span class="bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-orange-400 dark:to-amber-400 bg-clip-text text-transparent">MF AI</span></h1>
+            <p class="text-sm text-slate-500 dark:text-zinc-400">Trợ lý thông minh từ Mingfruit. Tôi có thể hỗ trợ bạn tìm kiếm thông tin web, lập trình, giải toán, đọc tài liệu và phân tích hình ảnh/âm thanh.</p>
+          </div>
+
+          <!-- Prompt Suggestions Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg text-left">
+            <button class="quick-prompt p-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-panel)] hover:border-blue-500 dark:hover:border-orange-500 transition-all text-xs group">
+              <div class="font-semibold text-slate-800 dark:text-zinc-200 group-hover:text-blue-500 dark:group-hover:text-orange-400 flex items-center justify-between">
+                🌐 Tin tức mới nhất <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+              </div>
+              <div class="text-slate-500 dark:text-zinc-400 mt-1">Cập nhật xu hướng công nghệ mới hôm nay</div>
+            </button>
+            <button class="quick-prompt p-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-panel)] hover:border-blue-500 dark:hover:border-orange-500 transition-all text-xs group">
+              <div class="font-semibold text-slate-800 dark:text-zinc-200 group-hover:text-blue-500 dark:group-hover:text-orange-400 flex items-center justify-between">
+                💻 Lập trình & Giải thuật <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+              </div>
+              <div class="text-slate-500 dark:text-zinc-400 mt-1">Viết script Python hoặc hàm JS tối ưu</div>
+            </button>
+            <button class="quick-prompt p-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-panel)] hover:border-blue-500 dark:hover:border-orange-500 transition-all text-xs group">
+              <div class="font-semibold text-slate-800 dark:text-zinc-200 group-hover:text-blue-500 dark:group-hover:text-orange-400 flex items-center justify-between">
+                🧮 Giải toán Pro <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+              </div>
+              <div class="text-slate-500 dark:text-zinc-400 mt-1">Giải chi tiết từng bước toán đại số & vi tích phân</div>
+            </button>
+            <button class="quick-prompt p-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-panel)] hover:border-blue-500 dark:hover:border-orange-500 transition-all text-xs group">
+              <div class="font-semibold text-slate-800 dark:text-zinc-200 group-hover:text-blue-500 dark:group-hover:text-orange-400 flex items-center justify-between">
+                📁 Phân tích File & Ảnh <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+              </div>
+              <div class="text-slate-500 dark:text-zinc-400 mt-1">Tải ảnh hoặc file âm thanh lên để tóm tắt</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat messages dynamically rendered here -->
+      </div>
+
+      <!-- Thinking / Searching Status Floating Banner -->
+      <div id="ai-status-indicator" class="hidden max-w-4xl w-full mx-auto px-4 py-2">
+        <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-[var(--bg-panel)] border border-[var(--border-color)] text-xs shadow-md">
+          <div class="flex items-center gap-1.5 accent-text font-semibold">
+            <i class="fa-solid fa-circle-notch fa-spin text-sm"></i>
+            <span id="status-text">MF đang suy nghĩ...</span>
+          </div>
+          <div class="h-3 w-[1px] bg-[var(--border-color)]"></div>
+          <div id="search-indicator-tag" class="text-slate-400 flex items-center gap-1 text-[11px]">
+            <i class="fa-solid fa-magnifying-glass text-blue-500 dark:text-orange-400"></i> Đang tìm kiếm thông tin thực tế từ Web...
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Input Section -->
+      <div class="p-3 md:p-4 border-t border-[var(--border-color)] bg-[var(--bg-panel)] shrink-0">
+        <div class="max-w-4xl mx-auto space-y-2">
+
+          <!-- File Attachment Preview Bar -->
+          <div id="attachment-preview-bar" class="hidden flex items-center gap-2 overflow-x-auto py-1">
+            <div id="file-preview-card" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs shrink-0">
+              <span id="file-type-icon"><i class="fa-solid fa-paperclip"></i></span>
+              <span id="file-name" class="max-w-[150px] truncate font-medium">file.png</span>
+              <button id="remove-file-btn" class="text-slate-400 hover:text-rose-500 ml-1">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Text Input Box & Action Buttons -->
+          <div class="relative flex items-end gap-2 bg-[var(--bg-main)] border border-[var(--border-color)] focus-within:border-blue-500 dark:focus-within:border-orange-500 rounded-2xl p-2 transition-colors shadow-inner">
+            
+            <!-- Attach File Button -->
+            <button id="attach-btn" class="p-2.5 text-slate-400 hover:text-blue-500 dark:hover:text-orange-400 transition-colors rounded-xl" title="Đính kèm Ảnh, File âm thanh, Tài liệu">
+              <i class="fa-solid fa-paperclip text-lg"></i>
+            </button>
+            <input type="file" id="hidden-file-input" class="hidden" accept="image/*,audio/*,.pdf,.txt,.js,.html,.py,.json,.doc,.docx">
+
+            <!-- Prompt Textarea -->
+            <textarea id="user-input" rows="1" placeholder="Nhập tin nhắn cho MF AI... (Shift + Enter để xuống dòng)" class="flex-1 bg-transparent border-none outline-none resize-none py-2 px-1 text-sm text-[var(--text-main)] placeholder-slate-400 max-h-32 leading-relaxed"></textarea>
+
+            <!-- Send Message Button -->
+            <button id="send-btn" class="p-2.5 accent-bg text-white rounded-xl shadow-md hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+              <i class="fa-solid fa-paper-plane text-sm"></i>
+            </button>
+          </div>
+
+          <!-- Footer Information -->
+          <div class="flex items-center justify-between text-[11px] text-slate-400 px-1">
+            <div class="flex items-center gap-2">
+              <span id="current-mode-label" class="font-medium text-slate-600 dark:text-zinc-300">Chế độ: Nhanh</span>
+              <span>•</span>
+              <span>Dữ liệu thực tế: <strong id="grounding-status-label" class="text-emerald-500">Đã bật</strong></span>
+            </div>
+            <span>MF AI v2.5 • Powered by Mingfruit</span>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Confirmation Custom Modal (No alert/confirm used) -->
+  <div id="custom-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
+    <div class="bg-[var(--bg-panel)] border border-[var(--border-color)] rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center gap-3 text-rose-500">
+        <div class="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-xl">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3 class="font-bold text-lg text-[var(--text-main)]" id="modal-title">Xác nhận xóa</h3>
+      </div>
+      <p class="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed" id="modal-message">
+        Bạn có chắc chắn muốn xóa toàn bộ lịch sử trò chuyện? Hành động này không thể hoàn tác.
+      </p>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button id="modal-cancel-btn" class="px-4 py-2 rounded-xl border border-[var(--border-color)] text-xs font-semibold text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors">
+          Hủy bỏ
+        </button>
+        <button id="modal-confirm-btn" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-md transition-colors">
+          Đồng ý Xóa
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase & App Script logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { 
+      getFirestore, 
+      collection, 
+      doc, 
+      setDoc, 
+      addDoc, 
+      getDocs, 
+      deleteDoc, 
+      onSnapshot, 
+      query, 
+      orderBy, 
+      serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // Firebase Configuration requested by user
+    const firebaseConfig = {
+      apiKey: "AIzaSyAkgK_3ts28ucAFf1KkVCSLkiopP47FKfY",
+      authDomain: "mingfruit.firebaseapp.com",
+      databaseURL: "https://mingfruit-default-rtdb.firebaseio.com",
+      projectId: "mingfruit",
+      storageBucket: "mingfruit.firebasestorage.app",
+      messagingSenderId: "537977784405",
+      appId: "1:537977784405:web:fd4264a93fa974e0f02cdc",
+      measurementId: "G-BT7Y2ZZN8J"
+    };
+
+    // App State Management
+    let firebaseApp, auth, db;
+    let currentUser = null;
+    let currentChatId = null;
+    let currentMode = 'fast'; // 'fast', 'normal', 'pro'
+    let webSearchEnabled = true;
+    let selectedFile = null; // Base64 attachment store
+    let chatHistory = []; // Active conversation messages array
+    let allSessions = []; // All chat sessions saved in Firebase
+
+    // System Prompts per reasoning mode
+    const MODE_PROMPTS = {
+      fast: "Bạn là MF (Mingfruit) - Trợ lý AI phản hồi siêu nhanh, ngắn gọn, súc tích, đi thẳng vào vấn đề chính mà không nói dài dòng thừa thãi.",
+      normal: "Bạn là MF (Mingfruit) - Trợ lý AI tư duy sâu sắc, trả lời thông minh, đầy đủ chi tiết, văn phong tự nhiên, thân thiện và chính xác.",
+      pro: "Bạn là MF (Mingfruit Pro) - Trợ lý AI chuyên sâu về giải toán đại số, vi tích phân và lập trình phần mềm phức tạp. Hãy trình bày lập luận từng bước tỉ mỉ (step-by-step), giải thích logic toán học và cung cấp mã nguồn sạch, tối ưu có chú thích."
+    };
+
+    const elements = {
+      sidebar: document.getElementById('sidebar'),
+      sidebarBackdrop: document.getElementById('sidebar-backdrop'),
+      toggleSidebarBtn: document.getElementById('toggle-sidebar-btn'),
+      closeSidebarMobile: document.getElementById('close-sidebar-mobile'),
+      themeToggleBtn: document.getElementById('theme-toggle-btn'),
+      webSearchToggle: document.getElementById('web-search-toggle'),
+      searchStatusDot: document.getElementById('search-status-dot'),
+      groundingStatusLabel: document.getElementById('grounding-status-label'),
+      currentModeLabel: document.getElementById('current-mode-label'),
+      newChatBtn: document.getElementById('new-chat-btn'),
+      clearHistoryBtn: document.getElementById('clear-history-btn'),
+      chatHistoryList: document.getElementById('chat-history-list'),
+      historyLoading: document.getElementById('history-loading'),
+      messagesContainer: document.getElementById('messages-container'),
+      welcomeScreen: document.getElementById('welcome-screen'),
+      aiStatusIndicator: document.getElementById('ai-status-indicator'),
+      statusText: document.getElementById('status-text'),
+      userInput: document.getElementById('user-input'),
+      sendBtn: document.getElementById('send-btn'),
+      attachBtn: document.getElementById('attach-btn'),
+      hiddenFileInput: document.getElementById('hidden-file-input'),
+      attachmentPreviewBar: document.getElementById('attachment-preview-bar'),
+      fileName: document.getElementById('file-name'),
+      fileTypeIcon: document.getElementById('file-type-icon'),
+      removeFileBtn: document.getElementById('remove-file-btn'),
+      customModal: document.getElementById('custom-modal'),
+      modalTitle: document.getElementById('modal-title'),
+      modalMessage: document.getElementById('modal-message'),
+      modalConfirmBtn: document.getElementById('modal-confirm-btn'),
+      modalCancelBtn: document.getElementById('modal-cancel-btn')
+    };
+
+    async function initFirebase() {
+      try {
+        firebaseApp = initializeApp(firebaseConfig);
+        auth = getAuth(firebaseApp);
+        db = getFirestore(firebaseApp);
+
+        // Sign in anonymously to enable database operations
+        onAuthStateChanged(auth, async (user) => {
+          if (user) {
+            currentUser = user;
+            listenToChatHistory();
+          } else {
+            await signInAnonymously(auth);
+          }
+        });
+      } catch (err) {
+        console.error("Firebase Initialization Error:", err);
+        elements.historyLoading.innerText = "Lịch sử lưu cục bộ (Không thể nối Cloud)";
+      }
+    }
+
+    const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'mingfruit-chat-app';
+
+    function getChatsCollectionRef() {
+      if (!currentUser) return null;
+      // Rule 1 Adherence: /artifacts/{appId}/users/{userId}/chats
+      return collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'chats');
+    }
+
+    function listenToChatHistory() {
+      const chatsRef = getChatsCollectionRef();
+      if (!chatsRef) return;
+
+      // Realtime listener for chat sessions
+      onSnapshot(chatsRef, (snapshot) => {
+        allSessions = [];
+        snapshot.forEach((doc) => {
+          allSessions.push({ id: doc.id, ...doc.data() });
+        });
+
+        // Sort by updatedAt descending
+        allSessions.sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0));
+        renderHistoryList();
+      }, (error) => {
+        console.error("Error fetching chats history:", error);
+      });
+    }
+
+    function renderHistoryList() {
+      elements.historyLoading.style.display = 'none';
+      
+      // Preserve section header
+      elements.chatHistoryList.innerHTML = '<div class="text-xs font-semibold text-slate-400 dark:text-zinc-500 px-3 py-2 uppercase tracking-wider">Lịch sử trò chuyện</div>';
+
+      if (allSessions.length === 0) {
+        elements.chatHistoryList.innerHTML += `<div class="px-3 py-3 text-xs text-slate-400 italic">Chưa có lịch sử chat nào.</div>`;
+        return;
+      }
+
+      allSessions.forEach(session => {
+        const isActive = session.id === currentChatId;
+        const item = document.createElement('div');
+        item.className = `group flex items-center justify-between px-3 py-2.5 rounded-xl text-xs cursor-pointer transition-all ${
+          isActive 
+            ? 'accent-bg text-white font-medium shadow-md' 
+            : 'hover:bg-slate-100 dark:hover:bg-zinc-800/60 text-slate-700 dark:text-zinc-300'
+        }`;
+        
+        item.innerHTML = `
+          <div class="flex items-center gap-2.5 overflow-hidden flex-1">
+            <i class="fa-regular fa-message ${isActive ? 'text-white' : 'text-slate-400'}"></i>
+            <span class="truncate max-w-[150px]">${escapeHtml(session.title || 'Cuộc trò chuyện mới')}</span>
+          </div>
+          <button data-id="${session.id}" class="delete-session-btn opacity-0 group-hover:opacity-100 p-1 hover:text-rose-400 transition-opacity">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        `;
+
+        item.addEventListener('click', (e) => {
+          if (e.target.closest('.delete-session-btn')) return;
+          loadChatSession(session);
+          closeSidebarMobile();
+        });
+
+        const delBtn = item.querySelector('.delete-session-btn');
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showConfirmModal("Xóa cuộc trò chuyện", "Bạn có chắc muốn xóa cuộc trò chuyện này?", () => deleteChatSession(session.id));
+        });
+
+        elements.chatHistoryList.appendChild(item);
+      });
+    }
+
+    async function createOrUpdateSession(firstMessage) {
+      if (!currentUser) return;
+      const chatsRef = getChatsCollectionRef();
+
+      if (!currentChatId) {
+        // Create new doc
+        const newDoc = await addDoc(chatsRef, {
+          title: firstMessage.slice(0, 30) + (firstMessage.length > 30 ? '...' : ''),
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          messages: chatHistory
+        });
+        currentChatId = newDoc.id;
+      } else {
+        // Update existing doc
+        const docRef = doc(chatsRef, currentChatId);
+        await setDoc(docRef, {
+          updatedAt: serverTimestamp(),
+          messages: chatHistory
+        }, { merge: true });
+      }
+    }
+
+    async function deleteChatSession(sessionId) {
+      if (!currentUser || !sessionId) return;
+      try {
+        const chatsRef = getChatsCollectionRef();
+        await deleteDoc(doc(chatsRef, sessionId));
+        if (currentChatId === sessionId) {
+          startNewChat();
+        }
+      } catch (e) {
+        console.error("Error deleting session:", e);
+      }
+    }
+
+    async function clearAllHistory() {
+      if (!currentUser) return;
+      const chatsRef = getChatsCollectionRef();
+      const snapshot = await getDocs(chatsRef);
+      snapshot.forEach(async (document) => {
+        await deleteDoc(doc(chatsRef, document.id));
+      });
+      startNewChat();
+    }
+
+    function loadChatSession(session) {
+      currentChatId = session.id;
+      chatHistory = session.messages || [];
+      renderAllMessages();
+    }
+
+    function startNewChat() {
+      currentChatId = null;
+      chatHistory = [];
+      renderAllMessages();
+    }
+
+    // Sidebar Toggles
+    elements.toggleSidebarBtn.addEventListener('click', () => {
+      elements.sidebar.classList.toggle('-translate-x-full');
+      elements.sidebarBackdrop.classList.toggle('opacity-0');
+      elements.sidebarBackdrop.classList.toggle('pointer-events-none');
+    });
+
+    elements.closeSidebarMobile.addEventListener('click', closeSidebarMobile);
+    elements.sidebarBackdrop.addEventListener('click', closeSidebarMobile);
+
+    function closeSidebarMobile() {
+      elements.sidebar.classList.add('-translate-x-full');
+      elements.sidebarBackdrop.classList.add('opacity-0');
+      elements.sidebarBackdrop.classList.add('pointer-events-none');
+    }
+
+    // New Chat Button
+    elements.newChatBtn.addEventListener('click', () => {
+      startNewChat();
+      closeSidebarMobile();
+    });
+
+    // Theme Toggle (Light <-> Dark)
+    elements.themeToggleBtn.addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+    });
+
+    // Web Search Toggle Button
+    elements.webSearchToggle.addEventListener('click', () => {
+      webSearchEnabled = !webSearchEnabled;
+      if (webSearchEnabled) {
+        elements.searchStatusDot.className = "w-2 h-2 rounded-full bg-emerald-500 ml-0.5";
+        elements.groundingStatusLabel.textContent = "Đã bật";
+        elements.groundingStatusLabel.className = "text-emerald-500 font-semibold";
+      } else {
+        elements.searchStatusDot.className = "w-2 h-2 rounded-full bg-slate-400 ml-0.5";
+        elements.groundingStatusLabel.textContent = "Tắt";
+        elements.groundingStatusLabel.className = "text-slate-400";
+      }
+    });
+
+    // Mode Selector Handler (Desktop & Mobile)
+    const modeButtons = document.querySelectorAll('.mode-btn, .mode-btn-mobile');
+    modeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mode = btn.dataset.mode;
+        currentMode = mode;
+
+        // Update active class state across buttons
+        modeButtons.forEach(b => {
+          if (b.dataset.mode === mode) {
+            b.className = b.classList.contains('mode-btn')
+              ? "mode-btn px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 accent-bg text-white shadow"
+              : "mode-btn-mobile text-xs py-1.5 rounded font-medium text-center accent-bg text-white";
+          } else {
+            b.className = b.classList.contains('mode-btn')
+              ? "mode-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 transition-all duration-200 flex items-center gap-1.5"
+              : "mode-btn-mobile text-xs py-1.5 rounded font-medium text-center text-slate-400";
+          }
+        });
+
+        // Update text indicator
+        const modeNames = { fast: 'Nhanh', normal: 'Thường', pro: 'Pro (Toán & Code)' };
+        elements.currentModeLabel.textContent = `Chế độ: ${modeNames[mode]}`;
+      });
+    });
+
+    // Clear History Button & Modal logic
+    elements.clearHistoryBtn.addEventListener('click', () => {
+      showConfirmModal(
+        "Xóa toàn bộ lịch sử", 
+        "Hành động này sẽ xóa vĩnh viễn tất cả cuộc trò chuyện đã lưu trên tài khoản này. Bạn có chắc không?", 
+        clearAllHistory
+      );
+    });
+
+    function showConfirmModal(title, message, onConfirm) {
+      elements.modalTitle.textContent = title;
+      elements.modalMessage.textContent = message;
+      elements.customModal.classList.remove('opacity-0', 'pointer-events-none');
+
+      const confirmHandler = () => {
+        onConfirm();
+        closeModal();
+      };
+
+      const cancelHandler = () => closeModal();
+
+      elements.modalConfirmBtn.onclick = confirmHandler;
+      elements.modalCancelBtn.onclick = cancelHandler;
+    }
+
+    function closeModal() {
+      elements.customModal.classList.add('opacity-0', 'pointer-events-none');
+    }
+
+    elements.attachBtn.addEventListener('click', () => {
+      elements.hiddenFileInput.click();
+    });
+
+    elements.hiddenFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const base64Data = event.target.result.split(',')[1];
+        selectedFile = {
+          name: file.name,
+          mimeType: file.type || 'application/octet-stream',
+          data: base64Data,
+          previewUrl: event.target.result,
+          isImage: file.type.startsWith('image/'),
+          isAudio: file.type.startsWith('audio/')
+        };
+
+        // Render preview
+        elements.fileName.textContent = file.name;
+        if (selectedFile.isImage) {
+          elements.fileTypeIcon.innerHTML = `<i class="fa-solid fa-image text-blue-500"></i>`;
+        } else if (selectedFile.isAudio) {
+          elements.fileTypeIcon.innerHTML = `<i class="fa-solid fa-music text-purple-500"></i>`;
+        } else {
+          elements.fileTypeIcon.innerHTML = `<i class="fa-solid fa-file-lines text-amber-500"></i>`;
+        }
+        elements.attachmentPreviewBar.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    });
+
+    elements.removeFileBtn.addEventListener('click', () => {
+      selectedFile = null;
+      elements.hiddenFileInput.value = '';
+      elements.attachmentPreviewBar.classList.add('hidden');
+    });
+
+    // Quick prompts handler on welcome screen
+    document.querySelectorAll('.quick-prompt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const text = btn.querySelector('.font-semibold').innerText;
+        elements.userInput.value = text;
+        handleSendMessage();
+      });
+    });
+
+    // Textarea Auto-expand
+    elements.userInput.addEventListener('input', () => {
+      elements.userInput.style.height = 'auto';
+      elements.userInput.style.height = `${Math.min(elements.userInput.scrollHeight, 128)}px`;
+    });
+
+    elements.userInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSendMessage();
+      }
+    });
+
+    elements.sendBtn.addEventListener('click', handleSendMessage);
+
+    async function handleSendMessage() {
+      const text = elements.userInput.value.trim();
+      if (!text && !selectedFile) return;
+
+      // Construct User Message Object
+      const userMsg = {
+        role: 'user',
+        text: text,
+        attachment: selectedFile ? { ...selectedFile } : null,
+        timestamp: new Date()
+      };
+
+      // Reset input fields
+      elements.userInput.value = '';
+      elements.userInput.style.height = 'auto';
+      const activeFile = selectedFile;
+      selectedFile = null;
+      elements.attachmentPreviewBar.classList.add('hidden');
+      elements.hiddenFileInput.value = '';
+
+      // Update Local Chat History
+      chatHistory.push(userMsg);
+      renderAllMessages();
+
+      // Show AI Status Indicator
+      elements.aiStatusIndicator.classList.remove('hidden');
+      elements.statusText.textContent = currentMode === 'pro' ? 'MF đang tính toán chuyên sâu...' : 'MF đang suy nghĩ...';
+      elements.messagesContainer.scrollTop = elements.messagesContainer.scrollHeight;
+
+      try {
+        // Call Gemini API with Grounding Search & Mode Settings
+        const aiResponse = await callGeminiApi(chatHistory, activeFile);
+
+        const aiMsg = {
+          role: 'model',
+          text: aiResponse.text,
+          sources: aiResponse.sources || [],
+          timestamp: new Date()
+        };
+
+        chatHistory.push(aiMsg);
+        await createOrUpdateSession(userMsg.text || 'Tệp đính kèm');
+
+      } catch (error) {
+        console.error("API Call Error:", error);
+        chatHistory.push({
+          role: 'model',
+          text: "⚠️ Rất tiếc, đã xảy ra lỗi trong quá trình xử lý yêu cầu của bạn. Vui lòng thử lại sau.",
+          sources: [],
+          timestamp: new Date()
+        });
+      } finally {
+        elements.aiStatusIndicator.classList.add('hidden');
+        renderAllMessages();
+      }
+    }
+
+    async function callGeminiApi(history, currentAttachment) {
+      const apiKey = ""; // Canvas runtime automatically supplies key when empty
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      // Build system prompt based on mode
+      const systemInstruction = MODE_PROMPTS[currentMode] || MODE_PROMPTS.fast;
+
+      // Format Contents history array for Gemini API
+      const contents = history.map((msg, index) => {
+        const parts = [];
+
+        if (msg.text) {
+          parts.push({ text: msg.text });
+        }
+
+        // Add attached inline image/audio if present in user message
+        if (msg.attachment && msg.attachment.data) {
+          parts.push({
+            inlineData: {
+              mimeType: msg.attachment.mimeType,
+              data: msg.attachment.data
+            }
+          });
+        }
+
+        return {
+          role: msg.role === 'user' ? 'user' : 'model',
+          parts: parts
+        };
+      });
+
+      // Construct Payload
+      const payload = {
+        contents: contents,
+        systemInstruction: {
+          parts: [{ text: systemInstruction }]
+        }
+      };
+
+      // Add Web Search Grounding Tool if enabled
+      if (webSearchEnabled) {
+        payload.tools = [{ "google_search": {} }];
+      }
+
+      // Fetch call with exponential backoff logic
+      let response;
+      let delay = 1000;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (response.ok) break;
+        } catch (e) {
+          if (attempt === 2) throw e;
+        }
+        await new Promise(r => setTimeout(r, delay));
+        delay *= 2;
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      const candidate = result.candidates?.[0];
+
+      if (candidate && candidate.content?.parts?.[0]?.text) {
+        const text = candidate.content.parts[0].text;
+        
+        // Extract Citation Sources if Grounding Search was performed
+        let sources = [];
+        const groundingMetadata = candidate.groundingMetadata;
+        if (groundingMetadata && groundingMetadata.groundingAttributions) {
+          sources = groundingMetadata.groundingAttributions
+            .map(attribution => ({
+              uri: attribution.web?.uri,
+              title: attribution.web?.title,
+            }))
+            .filter(source => source.uri && source.title);
+        }
+
+        return { text, sources };
+      } else {
+        return { text: "Không nhận được phản hồi phù hợp từ AI.", sources: [] };
+      }
+    }
+
+    function renderAllMessages() {
+      if (chatHistory.length === 0) {
+        elements.welcomeScreen.classList.remove('hidden');
+        elements.messagesContainer.innerHTML = '';
+        elements.messagesContainer.appendChild(elements.welcomeScreen);
+        return;
+      }
+
+      elements.welcomeScreen.classList.add('hidden');
+      elements.messagesContainer.innerHTML = '';
+
+      chatHistory.forEach((msg) => {
+        const msgWrapper = document.createElement('div');
+        msgWrapper.className = `flex gap-3 w-full max-w-3xl mx-auto ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`;
+
+        if (msg.role === 'user') {
+          // User Bubble
+          let attachmentHtml = '';
+          if (msg.attachment) {
+            if (msg.attachment.isImage) {
+              attachmentHtml = `<img src="${msg.attachment.previewUrl}" class="max-w-xs rounded-xl mb-2 border border-white/20 shadow" alt="User upload"/>`;
+            } else if (msg.attachment.isAudio) {
+              attachmentHtml = `<audio controls src="${msg.attachment.previewUrl}" class="mb-2 max-w-xs"></audio>`;
+            } else {
+              attachmentHtml = `<div class="flex items-center gap-2 p-2 rounded-lg bg-black/20 text-xs mb-2"><i class="fa-solid fa-file"></i> <span>${escapeHtml(msg.attachment.name)}</span></div>`;
+            }
+          }
+
+          msgWrapper.innerHTML = `
+            <div class="max-w-[85%] space-y-1">
+              <div class="user-bubble text-white px-4 py-3 rounded-2xl rounded-tr-sm shadow-md text-sm leading-relaxed">
+                ${attachmentHtml}
+                <div>${escapeHtml(msg.text)}</div>
+              </div>
+              <div class="text-[10px] text-slate-400 text-right pr-1">${formatTime(msg.timestamp)}</div>
+            </div>
+          `;
+        } else {
+          // AI Bubble (MF)
+          let sourcesHtml = '';
+          if (msg.sources && msg.sources.length > 0) {
+            sourcesHtml = `
+              <div class="mt-3 pt-2 border-t border-[var(--border-color)] text-xs text-slate-500">
+                <div class="font-semibold text-[11px] mb-1 flex items-center gap-1"><i class="fa-solid fa-link text-blue-500 dark:text-orange-400"></i> Nguồn tham khảo từ Web:</div>
+                <div class="flex flex-wrap gap-1.5">
+                  ${msg.sources.map(src => `<a href="${src.uri}" target="_blank" rel="noopener" class="px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 hover:bg-blue-100 dark:hover:bg-orange-950/50 text-blue-600 dark:text-orange-400 text-[11px] truncate max-w-[200px] inline-block border border-[var(--border-color)]">${escapeHtml(src.title)}</a>`).join('')}
+                </div>
+              </div>
+            `;
+          }
+
+          msgWrapper.innerHTML = `
+            <div class="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center bg-gradient-to-tr from-blue-600 to-cyan-400 dark:from-orange-500 dark:to-amber-400 text-white text-xs shadow-md mt-1">
+              <i class="fa-solid fa-sparkles"></i>
+            </div>
+            <div class="max-w-[85%] space-y-1">
+              <div class="bg-[var(--bg-bubble-ai)] text-[var(--text-main)] border border-[var(--border-color)] px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm text-sm leading-relaxed">
+                ${formatMarkdownText(msg.text)}
+                ${sourcesHtml}
+              </div>
+              <div class="text-[10px] text-slate-400 pl-1 flex items-center gap-2">
+                <span>MF AI</span>
+                <span>•</span>
+                <span>${formatTime(msg.timestamp)}</span>
+              </div>
+            </div>
+          `;
+        }
+
+        elements.messagesContainer.appendChild(msgWrapper);
+      });
+
+      // Scroll to bottom
+      elements.messagesContainer.scrollTop = elements.messagesContainer.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+      });
+    }
+
+    function formatTime(dateObj) {
+      if (!dateObj) return '';
+      const d = dateObj.seconds ? new Date(dateObj.seconds * 1000) : new Date(dateObj);
+      return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Basic markdown formatter for code blocks, bold text, and bullet lists
+    function formatMarkdownText(text) {
+      if (!text) return '';
+      let formatted = escapeHtml(text);
+
+      // Multi-line code blocks
+      formatted = formatted.replace(/```(\w*)\n([\s\S]*?)```/g, function(match, lang, code) {
+        return `<div class="my-2 rounded-xl overflow-hidden border border-[var(--border-color)] bg-zinc-950 text-zinc-100 font-mono text-xs">
+          <div class="bg-zinc-900 px-3 py-1.5 flex items-center justify-between text-slate-400 border-b border-zinc-800">
+            <span>${lang || 'code'}</span>
+            <button onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.innerText)" class="hover:text-white transition-colors text-[11px]"><i class="fa-regular fa-copy"></i> Copy</button>
+          </div>
+          <pre class="p-3 overflow-x-auto"><code>${code}</code></pre>
+        </div>`;
+      });
+
+      // Inline code
+      formatted = formatted.replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-zinc-800 font-mono text-xs text-blue-600 dark:text-orange-400">$1</code>');
+
+      // Bold text
+      formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+      // Line breaks
+      formatted = formatted.replace(/\n/g, '<br/>');
+
+      return formatted;
+    }
+
+    // Initialize application on DOM load
+    window.addEventListener('DOMContentLoaded', () => {
+      initFirebase();
+    });
+  </script>
+</body>
+</html>
