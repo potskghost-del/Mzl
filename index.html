@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MF (Mingfruit) - Trợ Lý AI Thông Minh</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Highlight.js for Code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"Fira Code"', 'monospace'],
+                    },
+                    colors: {
+                        // Light Mode Palette (White & Blue)
+                        light: {
+                            bg: '#F8FAFC',
+                            panel: '#FFFFFF',
+                            border: '#E2E8F0',
+                            accent: '#2563EB',
+                            accentHover: '#1D4ED8',
+                            textPrimary: '#0F172A',
+                            textSecondary: '#64748B',
+                            userBubble: '#2563EB',
+                            aiBubble: '#F1F5F9',
+                        },
+                        // Dark Mode Palette (Black & Orange)
+                        dark: {
+                            bg: '#09090B',
+                            panel: '#121215',
+                            border: '#27272A',
+                            accent: '#F97316',
+                            accentHover: '#EA580C',
+                            textPrimary: '#FAFAFA',
+                            textSecondary: '#A1A1AA',
+                            userBubble: '#EA580C',
+                            aiBubble: '#18181B',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom scrollbar and animations */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.3);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.5);
+        }
+        
+        .typing-dot {
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .markdown-body pre {
+            background-color: #0d1117 !important;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            overflow-x: auto;
+        }
+        .markdown-body code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.875rem;
+        }
+        .markdown-body p {
+            margin-bottom: 0.5rem;
+        }
+        .markdown-body p:last-child {
+            margin-bottom: 0;
+        }
+        .markdown-body ul, .markdown-body ol {
+            padding-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+        .markdown-body ul { list-style-type: disc; }
+        .markdown-body ol { list-style-type: decimal; }
+    </style>
+</head>
+
+<body class="h-full bg-light-bg dark:bg-dark-bg text-light-textPrimary dark:text-dark-textPrimary font-sans transition-colors duration-300 flex flex-col md:flex-row overflow-hidden">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Sidebar / Drawer -->
+    <aside id="sidebar" class="w-full md:w-80 bg-light-panel dark:bg-dark-panel border-r border-light-border dark:border-dark-border flex flex-col justify-between shrink-0 transition-all duration-300 z-20 hidden md:flex">
+        
+        <!-- Sidebar Header -->
+        <div class="p-4 border-b border-light-border dark:border-dark-border flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <!-- MF Futuristic Fruit Logo -->
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 dark:from-orange-500 dark:to-amber-500 flex items-center justify-center shadow-lg shadow-blue-500/20 dark:shadow-orange-500/20">
+                    <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.128 22 16.991 22 12c0-5.523-4.477-10-10-10z" stroke="none"/>
+                        <!-- Custom Mingfruit Icon SVG -->
+                        <path d="M12 3c-4.97 0-9 3.58-9 8 0 3.08 2.05 5.77 5.12 7.04C8.77 18.36 9 18 9 17.5v-1.6c0-.55.45-1 1-1h4c.55 0 1 .45 1 1v1.6c0 .5-.23.86-.88.54C17.95 16.77 20 14.08 20 11c0-4.42-4.03-8-9-8z" fill="currentColor" fill-opacity="0.2"/>
+                        <path d="M12 2v4M8 4l2 3M16 4l-2 3" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight tracking-wide bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-orange-500 dark:to-amber-400 bg-clip-text text-transparent">MF (Mingfruit)</h1>
+                    <p class="text-xs text-light-textSecondary dark:text-dark-textSecondary">Trợ lý Trí tuệ Nhân tạo</p>
+                </div>
+            </div>
+            <button id="close-sidebar-btn" class="md:hidden text-light-textSecondary dark:text-dark-textSecondary p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Sidebar Content / Controls -->
+        <div class="p-4 space-y-6 flex-1 overflow-y-auto">
+            
+            <!-- AI Mode Selection -->
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-light-textSecondary dark:text-dark-textSecondary mb-3">
+                    Chế độ Tư duy AI
+                </label>
+                <div class="space-y-2">
+                    <button data-mode="nhanh" class="mode-btn w-full p-3 rounded-xl border border-light-border dark:border-dark-border flex items-center justify-between text-left transition-all hover:border-blue-500 dark:hover:border-orange-500 bg-light-bg dark:bg-zinc-900/50">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-500">
+                                <i class="fa-solid fa-bolt text-sm"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold">Nhanh</div>
+                                <div class="text-xs text-light-textSecondary dark:text-dark-textSecondary">Suy nghĩ đơn giản, phản hồi siêu tốc</div>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-circle-check text-blue-600 dark:text-orange-500 mode-check opacity-0"></i>
+                    </button>
+
+                    <button data-mode="thuong" class="mode-btn w-full p-3 rounded-xl border border-light-border dark:border-dark-border flex items-center justify-between text-left transition-all hover:border-blue-500 dark:hover:border-orange-500 bg-light-bg dark:bg-zinc-900/50">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 rounded-lg bg-blue-500/10 text-blue-500 dark:text-orange-400">
+                                <i class="fa-solid fa-brain text-sm"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold">Thường</div>
+                                <div class="text-xs text-light-textSecondary dark:text-dark-textSecondary">Tư duy sâu, cân bằng nhạy bén</div>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-circle-check text-blue-600 dark:text-orange-500 mode-check opacity-0"></i>
+                    </button>
+
+                    <button data-mode="pro" class="mode-btn w-full p-3 rounded-xl border border-light-border dark:border-dark-border flex items-center justify-between text-left transition-all hover:border-blue-500 dark:hover:border-orange-500 bg-light-bg dark:bg-zinc-900/50">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 rounded-lg bg-purple-500/10 text-purple-500">
+                                <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold">Pro</div>
+                                <div class="text-xs text-light-textSecondary dark:text-dark-textSecondary">Siêu tư duy toán học, lập trình & phân tích</div>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-circle-check text-blue-600 dark:text-orange-500 mode-check opacity-0"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Features Toggle -->
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-light-textSecondary dark:text-dark-textSecondary mb-3">
+                    Công cụ Tích hợp
+                </label>
+                <div class="p-3 rounded-xl border border-light-border dark:border-dark-border bg-light-bg dark:bg-zinc-900/50 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 rounded-lg bg-sky-500/10 text-sky-500">
+                            <i class="fa-solid fa-globe text-sm"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold">Tìm kiếm Web (Grounding)</div>
+                            <div class="text-xs text-light-textSecondary dark:text-dark-textSecondary">Tự tra cứu dữ liệu mới nhất</div>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="web-search-toggle" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-slate-300 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 dark:peer-checked:bg-orange-500"></div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Clear History Action -->
+            <button id="clear-chat-btn" class="w-full py-2.5 px-4 rounded-xl border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 text-sm font-medium flex items-center justify-center gap-2 transition-colors">
+                <i class="fa-regular fa-trash-can"></i>
+                Xóa đoạn trò chuyện
+            </button>
+        </div>
+
+        <!-- Sidebar Footer / Theme Switcher -->
+        <div class="p-4 border-t border-light-border dark:border-dark-border">
+            <div class="flex items-center justify-between bg-light-bg dark:bg-zinc-900 p-1.5 rounded-xl border border-light-border dark:border-dark-border">
+                <button id="theme-light-btn" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+                    <i class="fa-solid fa-sun text-amber-500"></i>
+                    Sáng (Trắng-Xanh)
+                </button>
+                <button id="theme-dark-btn" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+                    <i class="fa-solid fa-moon text-orange-400"></i>
+                    Tối (Đen-Cam)
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Chat Workspace -->
+    <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-light-bg dark:bg-dark-bg">
+        
+        <!-- Header Bar -->
+        <header class="h-16 border-b border-light-border dark:border-dark-border bg-light-panel/80 dark:bg-dark-panel/80 backdrop-blur-md px-4 flex items-center justify-between z-10 shrink-0">
+            <div class="flex items-center gap-3">
+                <button id="open-sidebar-btn" class="md:hidden text-light-textSecondary dark:text-dark-textSecondary p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+                
+                <div class="flex items-center gap-2.5">
+                    <div class="relative">
+                        <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 dark:from-orange-500 dark:to-amber-500 flex items-center justify-center text-white font-bold text-sm">
+                            MF
+                        </div>
+                        <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-dark-panel rounded-full"></span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-sm">Mingfruit AI</span>
+                            <span id="current-mode-badge" class="px-2 py-0.5 text-[10px] font-semibold uppercase rounded-md bg-blue-100 dark:bg-orange-950/80 text-blue-600 dark:text-orange-400 border border-blue-200 dark:border-orange-800/50">Thường</span>
+                        </div>
+                        <p id="status-text" class="text-xs text-light-textSecondary dark:text-dark-textSecondary flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                            Sẵn sàng hỗ trợ bạn
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Header Quick Actions -->
+            <div class="flex items-center gap-2">
+                <button id="quick-theme-toggle" class="p-2 text-light-textSecondary dark:text-dark-textSecondary hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg transition-colors" title="Đổi giao diện">
+                    <i class="fa-solid fa-circle-half-stroke text-lg"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Messages Viewport -->
+        <div id="messages-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+            
+            <!-- Welcome Message Card -->
+            <div id="welcome-card" class="max-w-2xl mx-auto my-8 p-6 rounded-2xl bg-light-panel dark:bg-dark-panel border border-light-border dark:border-dark-border text-center shadow-sm">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 dark:from-orange-500 dark:to-amber-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg shadow-blue-500/20 dark:shadow-orange-500/20">
+                    MF
+                </div>
+                <h2 class="text-xl font-bold mb-2">Xin chào! Tôi là MF (Mingfruit)</h2>
+                <p class="text-sm text-light-textSecondary dark:text-dark-textSecondary mb-6 max-w-md mx-auto">
+                    Trợ lý AI đa năng được trang bị khả năng suy nghĩ linh hoạt, gửi file/hình ảnh/âm thanh và tự động tìm kiếm Web thông tin thực tế.
+                </p>
+
+                <!-- Quick Prompts Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+                    <button class="quick-prompt-btn p-3 rounded-xl border border-light-border dark:border-dark-border hover:border-blue-500 dark:hover:border-orange-500 bg-light-bg dark:bg-zinc-900/40 text-xs transition-all group">
+                        <div class="font-semibold mb-1 group-hover:text-blue-600 dark:group-hover:text-orange-400">🔍 Tìm kiếm thông tin thực tế</div>
+                        <div class="text-light-textSecondary dark:text-dark-textSecondary">Giá vàng hôm nay hoặc tin tức công nghệ mới nhất?</div>
+                    </button>
+                    <button class="quick-prompt-btn p-3 rounded-xl border border-light-border dark:border-dark-border hover:border-blue-500 dark:hover:border-orange-500 bg-light-bg dark:bg-zinc-900/40 text-xs transition-all group">
+                        <div class="font-semibold mb-1 group-hover:text-blue-600 dark:group-hover:text-orange-400">💻 Giải toán & Lập trình (Chế độ Pro)</div>
+                        <div class="text-light-textSecondary dark:text-dark-textSecondary">Viết một thuật toán hoặc giải bài toán phức tạp.</div>
+                    </button>
+                    <button class="quick-prompt-btn p-3 rounded-xl border border-light-border dark:border-dark-border hover:border-blue-500 dark:hover:border-orange-500 bg-light-bg dark:bg-zinc-900/40 text-xs transition-all group">
+                        <div class="font-semibold mb-1 group-hover:text-blue-600 dark:group-hover:text-orange-400">🖼️ Phân tích Hình ảnh / Tài liệu</div>
+                        <div class="text-light-textSecondary dark:text-dark-textSecondary">Tải lên ảnh hoặc file văn bản để tôi tóm tắt giúp bạn.</div>
+                    </button>
+                    <button class="quick-prompt-btn p-3 rounded-xl border border-light-border dark:border-dark-border hover:border-blue-500 dark:hover:border-orange-500 bg-light-bg dark:bg-zinc-900/40 text-xs transition-all group">
+                        <div class="font-semibold mb-1 group-hover:text-blue-600 dark:group-hover:text-orange-400">⚡ Câu hỏi nhanh (Chế độ Nhanh)</div>
+                        <div class="text-light-textSecondary dark:text-dark-textSecondary">Trả lời ngắn gọn, ngay lập tức cho các câu hỏi đơn giản.</div>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Chat Input Area -->
+        <div class="p-3 md:p-4 border-t border-light-border dark:border-dark-border bg-light-panel dark:bg-dark-panel shrink-0">
+            <div class="max-w-4xl mx-auto">
+                
+                <!-- Attached Files Preview Bar -->
+                <div id="attachments-preview" class="hidden flex-wrap gap-2 mb-3 p-2 bg-light-bg dark:bg-zinc-900 rounded-xl border border-light-border dark:border-dark-border"></div>
+
+                <!-- Input Box Container -->
+                <div class="relative flex items-end gap-2 bg-light-bg dark:bg-zinc-900/80 rounded-2xl border border-light-border dark:border-dark-border p-2 focus-within:border-blue-500 dark:focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-blue-500 dark:focus-within:ring-orange-500 transition-all">
+                    
+                    <!-- File Upload Button & Hidden Input -->
+                    <input type="file" id="file-input" class="hidden" multiple accept="image/*,audio/*,.pdf,.txt,.js,.py,.html,.css,.json,.docx">
+                    <button id="attach-btn" class="p-2.5 text-light-textSecondary dark:text-dark-textSecondary hover:text-blue-600 dark:hover:text-orange-400 rounded-xl hover:bg-slate-200/50 dark:hover:bg-zinc-800 transition-colors" title="Đính kèm file/hình ảnh/âm thanh">
+                        <i class="fa-solid fa-paperclip text-lg"></i>
+                    </button>
+
+                    <!-- Textarea Input -->
+                    <textarea id="user-input" rows="1" placeholder="Nhập tin nhắn cho MF..." class="flex-1 bg-transparent border-0 focus:ring-0 resize-none max-h-32 py-2 px-1 text-sm outline-none placeholder:text-light-textSecondary dark:placeholder:text-dark-textSecondary"></textarea>
+
+                    <!-- Send Button -->
+                    <button id="send-btn" class="p-2.5 bg-blue-600 dark:bg-orange-500 hover:bg-blue-700 dark:hover:bg-orange-600 text-white rounded-xl font-medium transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-blue-500/20 dark:shadow-orange-500/20">
+                        <i class="fa-solid fa-arrow-up text-base"></i>
+                    </button>
+                </div>
+
+                <div class="flex items-center justify-between text-[11px] text-light-textSecondary dark:text-dark-textSecondary mt-2 px-1">
+                    <span id="footer-search-indicator" class="flex items-center gap-1">
+                        <i class="fa-solid fa-shield-halved text-emerald-500"></i>
+                        Google Search Grounding: <strong class="text-emerald-600 dark:text-emerald-400">Bật</strong>
+                    </span>
+                    <span>MF có thể mắc lỗi. Hãy kiểm tra các thông tin quan trọng.</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Configuration & State
+        const CONFIG = {
+            apiKey: "", // API key handled runtime by environment
+            model: "gemini-3-flash-preview"
+        };
+
+        const state = {
+            theme: localStorage.getItem('mf_theme') || 'light', // 'light' or 'dark'
+            mode: 'thuong', // 'nhanh', 'thuong', 'pro'
+            webSearch: true,
+            chatHistory: [],
+            attachedFiles: [], // { name, type, data, isImage, isAudio, text }
+            isGenerating: false
+        };
+
+        // System Instructions corresponding to each mode
+        const SYSTEM_INSTRUCTIONS = {
+            nhanh: "Bạn là MF (Mingfruit) ở chế độ NHANH. Nhiệm vụ của bạn là trả lời ngắn gọn, cô đọng, đi thẳng vào trọng tâm, không rườm rà. Tốc độ là ưu tiên số 1.",
+            thuong: "Bạn là MF (Mingfruit) - trợ lý AI thông minh, nhạy bén và thân thiện. Cung cấp câu trả lời rõ ràng, đầy đủ, tự nhiên và logic.",
+            pro: "Bạn là MF (Mingfruit) Pro - chuyên gia AI cấp cao về Toán học, Lập trình và Phân tích logic. Phân tích chi tiết từng bước (step-by-step), chính xác tuyệt đối, đưa ra giải pháp mã nguồn hoặc công thức chuẩn xác nhất."
+        };
+
+        // DOM Elements
+        const elements = {
+            body: document.body,
+            sidebar: document.getElementById('sidebar'),
+            openSidebarBtn: document.getElementById('open-sidebar-btn'),
+            closeSidebarBtn: document.getElementById('close-sidebar-btn'),
+            themeLightBtn: document.getElementById('theme-light-btn'),
+            themeDarkBtn: document.getElementById('theme-dark-btn'),
+            quickThemeToggle: document.getElementById('quick-theme-toggle'),
+            modeBtns: document.querySelectorAll('.mode-btn'),
+            currentModeBadge: document.getElementById('current-mode-badge'),
+            webSearchToggle: document.getElementById('web-search-toggle'),
+            messagesContainer: document.getElementById('messages-container'),
+            welcomeCard: document.getElementById('welcome-card'),
+            userInput: document.getElementById('user-input'),
+            sendBtn: document.getElementById('send-btn'),
+            fileInput: document.getElementById('file-input'),
+            attachBtn: document.getElementById('attach-btn'),
+            attachmentsPreview: document.getElementById('attachments-preview'),
+            clearChatBtn: document.getElementById('clear-chat-btn'),
+            statusText: document.getElementById('status-text'),
+            footerSearchIndicator: document.getElementById('footer-search-indicator'),
+            quickPromptBtns: document.querySelectorAll('.quick-prompt-btn')
+        };
+
+        function applyTheme(theme) {
+            state.theme = theme;
+            localStorage.setItem('mf_theme', theme);
+
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                elements.themeDarkBtn.classList.add('bg-orange-500', 'text-white', 'shadow-sm');
+                elements.themeDarkBtn.classList.remove('text-light-textSecondary');
+                elements.themeLightBtn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+                elements.themeLightBtn.classList.add('text-dark-textSecondary');
+            } else {
+                document.documentElement.classList.remove('dark');
+                elements.themeLightBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+                elements.themeLightBtn.classList.remove('text-dark-textSecondary');
+                elements.themeDarkBtn.classList.remove('bg-orange-500', 'text-white', 'shadow-sm');
+                elements.themeDarkBtn.classList.add('text-light-textSecondary');
+            }
+        }
+
+        function setMode(modeKey) {
+            state.mode = modeKey;
+            elements.modeBtns.forEach(btn => {
+                const check = btn.querySelector('.mode-check');
+                if (btn.dataset.mode === modeKey) {
+                    btn.classList.add('border-blue-500', 'dark:border-orange-500', 'bg-blue-50/50', 'dark:bg-orange-950/20');
+                    check.classList.remove('opacity-0');
+                } else {
+                    btn.classList.remove('border-blue-500', 'dark:border-orange-500', 'bg-blue-50/50', 'dark:bg-orange-950/20');
+                    check.classList.add('opacity-0');
+                }
+            });
+
+            // Update Header Badge
+            const labels = { nhanh: 'Nhanh ⚡', thuong: 'Thường 🧠', pro: 'Pro 🔮' };
+            elements.currentModeBadge.textContent = labels[modeKey];
+        }
+
+        function handleFileUpload(e) {
+            const files = Array.from(e.target.files);
+            if (!files.length) return;
+
+            files.forEach(file => {
+                const reader = new FileReader();
+                const isImage = file.type.startsWith('image/');
+                const isAudio = file.type.startsWith('audio/');
+
+                if (isImage || isAudio) {
+                    reader.readAsDataURL(file);
+                    reader.onload = () => {
+                        const base64Data = reader.result.split(',')[1];
+                        state.attachedFiles.push({
+                            name: file.name,
+                            mimeType: file.type,
+                            data: base64Data,
+                            isImage,
+                            isAudio,
+                            previewUrl: reader.result
+                        });
+                        renderAttachmentsPreview();
+                    };
+                } else {
+                    // Read text files, code, doc
+                    reader.readAsText(file);
+                    reader.onload = () => {
+                        state.attachedFiles.push({
+                            name: file.name,
+                            mimeType: file.type || 'text/plain',
+                            text: reader.result,
+                            isDocument: true
+                        });
+                        renderAttachmentsPreview();
+                    };
+                }
+            });
+            elements.fileInput.value = '';
+        }
+
+        function removeAttachment(index) {
+            state.attachedFiles.splice(index, 1);
+            renderAttachmentsPreview();
+        }
+
+        function renderAttachmentsPreview() {
+            if (state.attachedFiles.length === 0) {
+                elements.attachmentsPreview.classList.add('hidden');
+                elements.attachmentsPreview.innerHTML = '';
+                return;
+            }
+
+            elements.attachmentsPreview.classList.remove('hidden');
+            elements.attachmentsPreview.innerHTML = state.attachedFiles.map((file, idx) => `
+                <div class="relative group flex items-center gap-2 px-3 py-1.5 rounded-lg bg-light-panel dark:bg-dark-panel border border-light-border dark:border-dark-border text-xs">
+                    ${file.isImage ? `<img src="${file.previewUrl}" class="w-6 h-6 object-cover rounded" />` : ''}
+                    ${file.isAudio ? `<i class="fa-solid fa-music text-purple-500"></i>` : ''}
+                    ${file.isDocument ? `<i class="fa-solid fa-file-code text-blue-500"></i>` : ''}
+                    <span class="max-w-[120px] truncate font-medium">${file.name}</span>
+                    <button onclick="removeAttachment(${idx})" class="text-light-textSecondary dark:text-dark-textSecondary hover:text-red-500 p-0.5">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function appendMessage(role, text, sources = [], thinkingStatus = null) {
+            if (elements.welcomeCard) {
+                elements.welcomeCard.remove();
+            }
+
+            const isUser = role === 'user';
+            const messageId = 'msg-' + Date.now();
+            const msgDiv = document.createElement('div');
+            msgDiv.id = messageId;
+            msgDiv.className = `flex gap-3 md:gap-4 ${isUser ? 'justify-end' : 'justify-start'} max-w-4xl mx-auto`;
+
+            const parsedMarkdown = isUser ? text : marked.parse(text);
+
+            let attachmentsHTML = '';
+            if (isUser && state.attachedFiles.length > 0) {
+                attachmentsHTML = `<div class="flex flex-wrap gap-2 mb-2">` +
+                    state.attachedFiles.map(f => {
+                        if (f.isImage) return `<img src="${f.previewUrl}" class="max-w-[200px] max-h-[150px] rounded-lg border border-white/20 object-cover" />`;
+                        if (f.isAudio) return `<audio controls src="${f.previewUrl}" class="h-8 max-w-[220px] rounded"></audio>`;
+                        return `<div class="px-2.5 py-1 bg-white/10 rounded-md text-xs font-mono">📄 ${f.name}</div>`;
+                    }).join('') + `</div>`;
+            }
+
+            let sourcesHTML = '';
+            if (sources && sources.length > 0) {
+                sourcesHTML = `
+                    <div class="mt-3 pt-2 border-t border-slate-200 dark:border-zinc-800 text-xs">
+                        <div class="font-semibold text-light-textSecondary dark:text-dark-textSecondary mb-1.5 flex items-center gap-1">
+                            <i class="fa-solid fa-link text-sky-500"></i> Nguồn tham khảo Web Grounding:
+                        </div>
+                        <div class="flex flex-wrap gap-1.5">
+                            ${sources.map(s => `
+                                <a href="${s.uri}" target="_blank" class="px-2 py-1 rounded bg-slate-200/60 dark:bg-zinc-800 hover:bg-blue-100 dark:hover:bg-zinc-700 text-blue-600 dark:text-orange-400 font-medium truncate max-w-[220px] inline-block transition-colors" title="${s.title}">
+                                    ${s.title || s.uri}
+                                </a>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            let avatarHTML = isUser ? '' : `
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 dark:from-orange-500 dark:to-amber-500 flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-sm">
+                    MF
+                </div>
+            `;
+
+            msgDiv.innerHTML = `
+                ${avatarHTML}
+                <div class="max-w-[85%] md:max-w-[75%] ${isUser ? 'bg-light-userBubble dark:bg-dark-userBubble text-white rounded-2xl rounded-tr-none px-4 py-3 shadow-sm' : 'bg-light-panel dark:bg-dark-panel border border-light-border dark:border-dark-border text-light-textPrimary dark:text-dark-textPrimary rounded-2xl rounded-tl-none px-4 py-3 shadow-sm'}">
+                    ${attachmentsHTML}
+                    <div class="${isUser ? 'whitespace-pre-wrap' : 'markdown-body text-sm leading-relaxed'}">
+                        ${parsedMarkdown}
+                    </div>
+                    ${sourcesHTML}
+                </div>
+            `;
+
+            elements.messagesContainer.appendChild(msgDiv);
+            elements.messagesContainer.scrollTop = elements.messagesContainer.scrollHeight;
+
+            // Highlight syntax if code block present
+            if (!isUser) {
+                msgDiv.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+            }
+
+            return messageId;
+        }
+
+        function showThinkingIndicator(statusMsg = "MF đang suy nghĩ...") {
+            const indicatorId = 'thinking-indicator';
+            let indicator = document.getElementById(indicatorId);
+            
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.id = indicatorId;
+                indicator.className = 'flex gap-3 md:gap-4 justify-start max-w-4xl mx-auto';
+                indicator.innerHTML = `
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 dark:from-orange-500 dark:to-amber-500 flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-sm">
+                        MF
+                    </div>
+                    <div class="bg-light-panel dark:bg-dark-panel border border-light-border dark:border-dark-border rounded-2xl rounded-tl-none px-4 py-3 shadow-sm flex items-center gap-3">
+                        <div class="flex space-x-1">
+                            <div class="w-2 h-2 rounded-full bg-blue-600 dark:bg-orange-500 typing-dot"></div>
+                            <div class="w-2 h-2 rounded-full bg-blue-600 dark:bg-orange-500 typing-dot"></div>
+                            <div class="w-2 h-2 rounded-full bg-blue-600 dark:bg-orange-500 typing-dot"></div>
+                        </div>
+                        <span id="thinking-text" class="text-xs text-light-textSecondary dark:text-dark-textSecondary font-medium">${statusMsg}</span>
+                    </div>
+                `;
+                elements.messagesContainer.appendChild(indicator);
+            } else {
+                document.getElementById('thinking-text').textContent = statusMsg;
+            }
+            
+            elements.messagesContainer.scrollTop = elements.messagesContainer.scrollHeight;
+        }
+
+        function removeThinkingIndicator() {
+            const indicator = document.getElementById('thinking-indicator');
+            if (indicator) indicator.remove();
+        }
+
+        async function sendMessage() {
+            const text = elements.userInput.value.trim();
+            if ((!text && state.attachedFiles.length === 0) || state.isGenerating) return;
+
+            state.isGenerating = true;
+            elements.sendBtn.disabled = true;
+
+            // 1. Render User Message
+            const currentFiles = [...state.attachedFiles];
+            appendMessage('user', text);
+
+            // Reset Input
+            elements.userInput.value = '';
+            elements.userInput.style.height = 'auto';
+
+            // Prepare Payload Parts
+            const userParts = [];
+            
+            // Append Files to Parts
+            currentFiles.forEach(f => {
+                if (f.isImage || f.isAudio) {
+                    userParts.push({
+                        inlineData: {
+                            mimeType: f.mimeType,
+                            data: f.data
+                        }
+                    });
+                } else if (f.isDocument) {
+                    userParts.push({
+                        text: `[Nội dung tệp đính kèm "${f.name}"]:\n${f.text}\n`
+                    });
+                }
+            });
+
+            if (text) {
+                userParts.push({ text: text });
+            }
+
+            // Save User Turn to Chat History
+            state.chatHistory.push({
+                role: 'user',
+                parts: userParts
+            });
+
+            // Clear attached files state
+            state.attachedFiles = [];
+            renderAttachmentsPreview();
+
+            // Status updates
+            const isSearching = state.webSearch;
+            showThinkingIndicator(isSearching ? "Đang truy vấn Google Search & suy nghĩ..." : "MF đang suy nghĩ câu trả lời...");
+
+            try {
+                // Construct payload
+                const payload = {
+                    contents: state.chatHistory,
+                    systemInstruction: {
+                        parts: [{ text: SYSTEM_INSTRUCTIONS[state.mode] }]
+                    }
+                };
+
+                // Enable Google Search Grounding if enabled
+                if (state.webSearch) {
+                    payload.tools = [{ "google_search": {} }];
+                }
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${CONFIG.model}:generateContent?key=${CONFIG.apiKey}`;
+
+                // Exponential Backoff Fetch
+                let response = null;
+                let delay = 1000;
+                for (let retries = 0; retries < 3; retries++) {
+                    try {
+                        const res = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (res.ok) {
+                            response = await res.json();
+                            break;
+                        }
+                    } catch (err) {
+                        if (retries === 2) throw err;
+                    }
+                    await new Promise(r => setTimeout(r, delay));
+                    delay *= 2;
+                }
+
+                removeThinkingIndicator();
+
+                if (!response) {
+                    throw new Error("Không thể kết nối tới máy chủ AI MF.");
+                }
+
+                const candidate = response.candidates?.[0];
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    const aiText = candidate.content.parts[0].text;
+
+                    // Extract Grounding Citations
+                    let sources = [];
+                    const groundingMetadata = candidate.groundingMetadata;
+                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                        sources = groundingMetadata.groundingAttributions
+                            .map(attr => ({
+                                uri: attr.web?.uri,
+                                title: attr.web?.title
+                            }))
+                            .filter(s => s.uri && s.title);
+                    }
+
+                    // Append AI Response
+                    appendMessage('model', aiText, sources);
+
+                    // Save AI Turn to History
+                    state.chatHistory.push({
+                        role: 'model',
+                        parts: [{ text: aiText }]
+                    });
+                } else {
+                    appendMessage('model', '⚠️ Rất tiếc, MF không thể phản hồi câu hỏi này. Vui lòng thử lại!');
+                }
+
+            } catch (error) {
+                console.error(error);
+                removeThinkingIndicator();
+                appendMessage('model', `❌ **Đã xảy ra lỗi:** ${error.message || 'Lỗi kết nối API.'}`);
+            } finally {
+                state.isGenerating = false;
+                elements.sendBtn.disabled = false;
+            }
+        }
+
+        function initEvents() {
+            // Theme Switchers
+            elements.themeLightBtn.addEventListener('click', () => applyTheme('light'));
+            elements.themeDarkBtn.addEventListener('click', () => applyTheme('dark'));
+            elements.quickThemeToggle.addEventListener('click', () => {
+                applyTheme(state.theme === 'light' ? 'dark' : 'light');
+            });
+
+            // Sidebar Responsive Drawer
+            elements.openSidebarBtn.addEventListener('click', () => {
+                elements.sidebar.classList.remove('hidden');
+                elements.sidebar.classList.add('fixed', 'inset-y-0', 'left-0', 'z-40');
+            });
+            elements.closeSidebarBtn.addEventListener('click', () => {
+                elements.sidebar.classList.add('hidden');
+                elements.sidebar.classList.remove('fixed', 'inset-y-0', 'left-0', 'z-40');
+            });
+
+            // Modes Selection
+            elements.modeBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    setMode(btn.dataset.mode);
+                });
+            });
+
+            // Web Search Toggle
+            elements.webSearchToggle.addEventListener('change', (e) => {
+                state.webSearch = e.target.checked;
+                elements.footerSearchIndicator.innerHTML = state.webSearch 
+                    ? `<i class="fa-solid fa-shield-halved text-emerald-500"></i> Google Search Grounding: <strong class="text-emerald-600 dark:text-emerald-400">Bật</strong>`
+                    : `<i class="fa-solid fa-shield-halved text-gray-400"></i> Google Search Grounding: <strong class="text-gray-400">Tắt</strong>`;
+            });
+
+            // File Attachment Inputs
+            elements.attachBtn.addEventListener('click', () => elements.fileInput.click());
+            elements.fileInput.addEventListener('change', handleFileUpload);
+
+            // Auto-resize Textarea Input
+            elements.userInput.addEventListener('input', () => {
+                elements.userInput.style.height = 'auto';
+                elements.userInput.style.height = Math.min(elements.userInput.scrollHeight, 128) + 'px';
+            });
+
+            // Enter key to send (Shift+Enter for new line)
+            elements.userInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            elements.sendBtn.addEventListener('click', sendMessage);
+
+            // Clear Chat History
+            elements.clearChatBtn.addEventListener('click', () => {
+                state.chatHistory = [];
+                elements.messagesContainer.innerHTML = '';
+                elements.messagesContainer.appendChild(elements.welcomeCard);
+            });
+
+            // Quick Prompt Cards
+            elements.quickPromptBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const text = btn.querySelector('.font-semibold').textContent.replace(/^[\u1F00-\u1F9FF\u2600-\u26FF\u2700-\u27BF]\s*/, '');
+                    elements.userInput.value = text;
+                    sendMessage();
+                });
+            });
+        }
+
+        // Initialize App on DOM Load
+        window.addEventListener('DOMContentLoaded', () => {
+            applyTheme(state.theme);
+            setMode('thuong');
+            initEvents();
+        });
+    </script>
+</body>
+</html>
